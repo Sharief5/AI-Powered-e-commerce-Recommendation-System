@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecommerce Recommendation System</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar { box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
+    .container { margin-top: 50px; }
+    .video-background { width: 100%; height: 400px; object-fit: cover; }
+    .nav-link:hover { color: blue !important; }
+    .modal-content { background-color: #fff; color: #000; }
+    .dark-theme { background-color: black !important; color: white !important; }
+    .dark-theme .modal-content { background-color: black; color: white; }
+
+    .card-img-top {
+      border-radius: 25px;
+      height: 250px;
+      width: 100%;
+      object-fit: cover;
+      transition: opacity 0.4s ease, transform 0.3s ease;
+      opacity: 0.85;
+    }
+
+    .card-img-top:hover {
+      opacity: 1;
+      transform: scale(1.03);
+    }
+
+    .card {
+      width: 320px;
+      height: 420px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin: 20px 15px;
+      padding: 15px;
+      background-color: white;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+    }
+
+    .card-body {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 10px;
+      margin-bottom: 6px;
+    }
+
+    .card-text {
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 10px 0;
+    }
+
+
+    .wishlist-btn {
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: grey;
+  cursor: pointer;
+}
+
+.wishlist-btn.active {
+  color: red;
+}
+
+  </style>
+</head>
+<body>
+
+  
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
+  <a class="navbar-brand font-weight-bold" href="#">Ecommerce Recommendation System</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+    
+    <!-- Center-aligned links -->
+    <ul class="navbar-nav mx-auto" style="gap: 28px; display: flex; align-items: center; justify-content: center;">
+      <li class="nav-item active"><a class="nav-link" href="#"><i class="fas fa-home"></i> Home</a></li>
+      <li class="nav-item active"><a class="nav-link" href="#" id="settingsLink"><i class="fas fa-cog"></i> Settings</a></li>
+      <!-- Categories -->
+<li class="nav-item active">
+  <a class="nav-link" href="/categories">
+    <i class="fas fa-th-large"></i> Categories
+  </a>
+</li>
+
+<!-- Deals -->
+<li class="nav-item active">
+  <a class="nav-link" href="/deals">
+    <i class="fas fa-tags"></i> Deals
+  </a>
+</li>
+
+<!-- About Us -->
+<li class="nav-item active">
+  <a class="nav-link" href="/about">
+    <i class="fas fa-info-circle"></i> About Us
+  </a>
+</li>
+
+<!-- Contact -->
+<li class="nav-item active">
+  <a class="nav-link" href="/contact">
+    <i class="fas fa-envelope"></i> Contact
+  </a>
+</li>
+
+      <li class="nav-item active">
+  <a class="nav-link" href="/cart" style="position: relative;">
+    <i class="fas fa-shopping-cart"></i> Cart
+    {% if cart_count and cart_count > 0 %}
+      <span class="badge badge-danger" style="position: absolute; top: 0; right: 0;">
+        {{ cart_count }}
+      </span>
+    {% endif %}
+
+  </a>
+</li>
+
+      <li class="nav-item active">
+        <a class="nav-link" href="/wishlist" style="position: relative;">
+          <i class="fas fa-heart"></i> Wishlist
+          {% if wishlist_count and wishlist_count > 0 %}
+            <span class="badge badge-danger" style="position: absolute; top: 0; right: 0;">
+              {{ wishlist_count }}
+            </span>
+          {% endif %}
+        </a>
+      </li>
+
+
+<li class="nav-item">
+    <a href="/clear_cart" class="btn btn-info btn-block mt-1">Clear Cart</a>
+
+
+</li>
+
+
+    </ul>
+
+   <!-- Right-aligned Sign Up / Sign In / Logout buttons -->
+<ul class="navbar-nav ml-auto">
+
+    {% if session['username'] %}
+        <li class="nav-item mx-2">
+            <span class="nav-link font-weight-bold text-success">
+                Welcome, {{ session['username'] }}
+            </span>
+        </li>
+        <li class="nav-item mx-2">
+            <a class="nav-link btn btn-primary px-4 font-weight-bold" href="/logout">Logout</a>
+        </li>
+    {% else %}
+        <li class="nav-item mx-2">
+            <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signup">Sign Up</a>
+        </li>
+        <li class="nav-item mx-2">
+            <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signin">Sign In</a>
+        </li>
+    {% endif %}
+
+</ul>
+
+
+
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert alert-success text-center mt-3">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+
+
+<!-- Video Section -->
+<div class="carousel-inner">
+  <div class="carousel-item active">
+    <video class="video-background" autoplay loop muted>
+      <source src="static/v.mp4" type="video/mp4">
+    </video>
+  </div>
+</div>
+
+<!-- Go to Main Page -->
+<div class="text-center mt-5">
+  <a href="main" class="btn btn-primary btn-lg">Go To Main Page</a>
+</div>
+
+{% if signup_message %}
+  <h5 style="text-align:center; margin-top:10px; font-weight: bold;">{{ signup_message }}</h5>
+{% endif %}
+
+<!-- Trending Products -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Trending Products</h2>
+  <div class="row mt-4 justify-content-start" style="margin-left: -30px;">
+    {% for index, product in trending_products.iterrows() %}
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4" style="padding-left: 5px; padding-right: 5px;">
+      <div class="card" style="margin-left: 0px;">
+        <img src="{{ product['ImageURL'].split(' | ')[0] }}" class="card-img-top" alt="{{ product['Name'] }}" style="height: 200px;">
+        <div class="card-body">
+          <h5 class="card-title">{{ truncate(product['Name'], 12) }}</h5>
+          <p class="card-text">Brand: {{ product['Brand'] }}</p>
+          <p class="card-text">Price: ₹{{ random_prices[index] }}</p>
+          {% if is_in_cart(product['Name']) %}
+            <button class="btn btn-success btn-sm mt-2" disabled>
+              <i class="fas fa-check"></i> In Cart
+            </button>
+          {% elif is_in_wishlist(product['Name']) %}
+            <button class="btn btn-danger btn-sm mt-2" disabled>
+              <i class="fas fa-heart"></i> In Wishlist
+            </button>
+          {% else %}
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#productModal{{ index }}">Buy Now</button>
+            <form method="POST" action="/add_to_wishlist" class="d-inline">
+              <input type="hidden" name="product_name" value="{{ product['Name'] }}">
+              <input type="hidden" name="brand" value="{{ product['Brand'] }}">
+              <input type="hidden" name="price" value="{{ random_prices[index] }}">
+              <input type="hidden" name="image_url" value="{{ product['ImageURL'].split(' | ')[0] }}">
+              <button type="submit" class="btn btn-outline-danger btn-sm mt-2">
+                <i class="fas fa-heart"></i> Wishlist
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="productModal{{ index }}" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ product['Name'] }}</h5>
+            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+          </div>
+          <div class="modal-body text-center">
+            <img src="{{ product['ImageURL'].split(' | ')[0] }}" class="img-fluid" alt="{{ product['Name'] }}" style="height: 200px;">
+            <p><strong>Brand:</strong> {{ product['Brand'] }}</p>
+            <p><strong>Review Count:</strong> {{ product['ReviewCount'] }}</p>
+            <p><strong>Rating:</strong> {{ product['Rating'] }}</p>
+            <p><strong>Price:</strong> ₹{{ random_prices[index] }}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            {% if is_in_cart(product['Name']) %}
+              <button class="btn btn-success" disabled>
+                <i class="fas fa-check"></i> Already in Cart
+              </button>
+            {% else %}
+              <form action="/add_to_cart" method="POST" class="d-inline">
+                <input type="hidden" name="product_name" value="{{ product['Name'] }}">
+                <input type="hidden" name="brand" value="{{ product['Brand'] }}">
+                <input type="hidden" name="price" value="{{ random_prices[index] }}">
+                <input type="hidden" name="image_url" value="{{ product['ImageURL'].split(' | ')[0] }}">
+                <input type="hidden" name="source_page" value="{{ request.path }}">
+                <button type="submit" class="btn btn-success">Add to Cart</button>
+              </form>
+            {% endif %}
+            
+            {% if is_in_wishlist(product['Name']) %}
+              <button class="btn btn-danger" disabled>
+                <i class="fas fa-heart"></i> Already in Wishlist
+              </button>
+            {% else %}
+              <form action="/add_to_wishlist" method="POST" class="d-inline ml-2">
+                <input type="hidden" name="product_name" value="{{ product['Name'] }}">
+                <input type="hidden" name="brand" value="{{ product['Brand'] }}">
+                <input type="hidden" name="price" value="{{ random_prices[index] }}">
+                <input type="hidden" name="image_url" value="{{ product['ImageURL'].split(' | ')[0] }}">
+                <button type="submit" class="btn btn-outline-danger">
+                  <i class="fas fa-heart"></i> Add to Wishlist
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+<!-- Footer -->
+<footer class="footer bg-dark text-white mt-5">
+  <div class="container pt-4 pb-3">
+    <div class="row">
+
+      <!-- About Us -->
+      <div class="col-md-3">
+        <h5><a href="#" class="text-white" data-toggle="modal" data-target="#aboutModal">About Us</a></h5>
+        <p style="font-size: 0.9rem;">Click to learn more about this project, the technologies used, and the developer.</p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-md-3">
+        <h5>Quick Links</h5>
+        <ul class="list-unstyled">
+          <li><a href="{{ url_for('index') }}" >Home</a></li>
+          <li><a href="#" data-toggle="modal" data-target="#aboutModal">About</a></li>
+          <li><a href="#" data-toggle="modal" data-target="#supportModal">Support</a></li>
+          <li><a href="#" data-toggle="modal" data-target="#faqModal">FAQ</a></li>
+          <li><a href="#" data-toggle="modal" data-target="#termsModal">Terms of Service</a></li>
+          <li><a href="#" data-toggle="modal" data-target="#privacyModal">Privacy Policy</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="col-md-3">
+        <h5>Contact Us</h5>
+        <p><strong>Ecommerce Recommendation System</strong></p>
+        <p>Vijayawada, Andhra Pradesh</p>
+        <p>Phone: +91-9640689962</p>
+        <p>Email: <a href="mailto:shariefprojects@gmail.com" class="text-white">ERS@gmail.com</a></p>
+      </div>
+
+      <!-- Developer Credits -->
+      <div class="col-md-3">
+        <h5>Developers</h5>
+        <p><strong>Shaik Nagoor Sharief</strong></p>
+        <p><strong>Shaik Abrar</strong></p>
+        <p><strong>V.S. Girija Sarvagna</strong></p>
+        <p><strong>Meghana</strong></p>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-3">
+      <hr style="background-color: rgba(255,255,255,0.2);">
+      <p>© 2025 Ecommerce Recommendation System. All Rights Reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- About Us Modal -->
+<div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-dark">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title" id="aboutModalLabel">About This Project</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Ecommerce Recommendation System</strong> is a Final Year B.Tech project developed by <strong>Shaik Nagoor Sharief</strong> (KL University).</p>
+        <p>This platform helps users discover products using intelligent machine learning models.</p>
+        <p>It leverages <strong>Content-Based Filtering</strong> and <strong>Natural Language Processing (NLP)</strong> to recommend similar products based on name, brand, tags, and reviews.</p>
+        <p><strong>Technologies Used:</strong> Flask, Pandas, Scikit-learn, MySQL, HTML, CSS, Bootstrap.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title" id="contactModalLabel">Contact Information</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Ecommerce Recommendation System</strong></p>
+        <p>📍 Vijayawada, Andhra Pradesh</p>
+        <p>📞 Phone: +91-9640689962</p>
+        <p>📧 Email: <a href="mailto:shariefprojects@gmail.com">ERS@gmail.com</a></p>
+        <hr>
+        <p>For project queries or support, feel free to reach out anytime!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Cart Modal -->
+<div class="modal fade" id="cartModal" tabindex="-1" role="dialog" aria-labelledby="cartModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cartModalLabel">Your Cart</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        {% if cart_items %}
+          <div class="row">
+            {% for item in cart_items %}
+              <div class="col-md-4">
+                <div class="card mb-3">
+                  <img class="card-img-top" src="{{ item.image_url }}" alt="{{ item.product_name }}" style="height:180px; object-fit:cover;">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ item.product_name }}</h5>
+                    <p class="card-text">Brand: {{ item.brand }}</p>
+                    <p class="card-text">Price: ₹{{ item.price }}</p>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p>Your cart is empty.</p>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+
+<script>
+  window.onload = function () {
+    document.getElementById('settingsLink')?.addEventListener('click', () => {
+      $('#settingsModal').modal('show');
+    });
+
+    document.getElementById('applyTheme')?.addEventListener('click', () => {
+      let theme = document.querySelector('input[name="theme"]:checked').value;
+      document.body.className = '';
+
+      if (theme === 'black') {
+        document.body.style.backgroundColor = '#121212';
+        document.body.style.color = 'white';
+      } else if (theme === 'green') {
+        document.body.style.backgroundColor = '#007f5f';
+        document.body.style.color = 'white';
+      } else {
+        document.body.style.backgroundColor = '#f8f9fa';
+        document.body.style.color = 'black';
+      }
+
+      $('#settingsModal').modal('hide');
+    });
+
+    document.getElementById('zoomIn')?.addEventListener('click', () => {
+      document.body.style.zoom = "115%";
+    });
+
+    document.getElementById('zoomOut')?.addEventListener('click', () => {
+      document.body.style.zoom = "100%";
+    });
+  };
+</script>
+
+<!-- ✅ Add this part for Cart Success Modal -->
+{% if cart_success %}
+<script>
+  $(document).ready(function () {
+    $('#cartSuccessModal').modal('show');
+  });
+</script>
+{% endif %}
+
+
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <h6 class="mb-2">Choose Theme:</h6>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="theme" id="defaultTheme" value="default" checked>
+          <label class="form-check-label" for="defaultTheme">Default</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="theme" id="blackTheme" value="black">
+          <label class="form-check-label" for="blackTheme">Black Theme</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="theme" id="greenTheme" value="green">
+          <label class="form-check-label" for="greenTheme">Green Theme</label>
+        </div>
+
+        <hr>
+        <h6 class="mt-3 mb-2">Zoom:</h6>
+        <button id="zoomIn" class="btn btn-sm btn-outline-primary mr-2">Zoom In</button>
+        <button id="zoomOut" class="btn btn-sm btn-outline-secondary">Zoom Out</button>
+      </div>
+
+      <div class="modal-footer">
+        <button id="applyTheme" class="btn btn-primary">Apply Theme</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<!-- Deals Modal -->
+<div class="modal fade" id="dealsModal" tabindex="-1" role="dialog" aria-labelledby="dealsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="dealsModalLabel">Hot Deals 🔥</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <ul>
+          <li><strong>Flat 50% Off</strong> on select beauty products</li>
+          <li><strong>Buy 1 Get 1 Free</strong> on grooming essentials</li>
+          <li><strong>Exclusive Combo Packs</strong> at ₹499 only</li>
+          <li>Limited Time Offer: <strong>Free Shipping</strong> on orders above ₹999</li>
+        </ul>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- Categories Modal -->
+<div class="modal fade" id="categoriesModal" tabindex="-1" role="dialog" aria-labelledby="categoriesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="categoriesModalLabel">Product Categories 🛍️</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <ul>
+          <li>💄 Beauty & Makeup</li>
+          <li>🧴 Skincare & Wellness</li>
+          <li>🪒 Grooming & Personal Care</li>
+          <li>🧼 Soaps & Sanitizers</li>
+          <li>👶 Baby Care</li>
+          <li>🎁 Combo Offers</li>
+        </ul>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- Sign Up Modal -->
+<div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form action="/signup" method="POST" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Sign Up</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><input type="text" class="form-control" name="username" placeholder="Username" required></div>
+        <div class="form-group"><input type="email" class="form-control" name="email" placeholder="Email" required></div>
+        <div class="form-group"><input type="password" class="form-control" name="password" placeholder="Password" required></div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Sign In Modal -->
+<div class="modal fade" id="signinModal" tabindex="-1" role="dialog" aria-labelledby="signinModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form action="/signin" method="POST" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Sign In</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><input type="text" class="form-control" name="signinUsername" placeholder="Username" required></div>
+        <div class="form-group"><input type="password" class="form-control" name="signinPassword" placeholder="Password" required></div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Sign In</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+<!-- Add to Cart Success Modal -->
+<div class="modal fade" id="cartSuccessModal" tabindex="-1" role="dialog" aria-labelledby="cartSuccessModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cartSuccessModalLabel">Product Added</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body text-center">
+        ✅ Product successfully added to your cart!
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if cart_success %}
+<script>
+  setTimeout(function() {
+    if (window.location.href.includes('cart_success=true')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, 500); // After 0.5 seconds, remove the query parameter
+</script>
+{% endif %}
+
+
+
+
+<!-- Support Modal -->
+<div class="modal fade" id="supportModal" tabindex="-1" role="dialog" aria-labelledby="supportModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Support</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        For any support queries, please email us at <strong>support@example.com</strong> or call <strong>+91-9876543210</strong>.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ Modal -->
+<div class="modal fade" id="faqModal" tabindex="-1" role="dialog" aria-labelledby="faqModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Frequently Asked Questions</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Q1:</strong> How do I use this platform?</p>
+        <p><strong>A:</strong> Just sign in, explore products, and add them to your cart.</p>
+
+        <p><strong>Q2:</strong> Can I contact customer support?</p>
+        <p><strong>A:</strong> Yes, see the support section or email us.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Terms of Service Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">Terms of Service</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        By using this website, you agree to our terms of service, which include proper use of content, no duplication, and legal compliance.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1" role="dialog" aria-labelledby="privacyModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">Privacy Policy</h5>
+        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        We respect your privacy. All user data is securely stored and not shared with third parties.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function toggleWishlist(button) {
+  button.classList.toggle('active');
+  if (button.classList.contains('active')) {
+    button.innerHTML = '&#10084;';  // Red filled heart ♥
+  } else {
+    button.innerHTML = '&#9825;';   // Empty heart ♡
+  }
+}
+</script>
+
+
+
+</body>
+</html>

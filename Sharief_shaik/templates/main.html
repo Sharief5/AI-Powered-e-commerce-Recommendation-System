@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Main Page - Recommendations</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+
+    .card-img-top {
+      border-radius: 25px;
+      height: 250px;
+      width: 100%;
+      object-fit: cover;
+      transition: opacity 0.4s ease, transform 0.3s ease;
+      opacity: 0.85;
+    }
+
+    .card-img-top:hover {
+      opacity: 1;
+      transform: scale(1.03);
+    }
+
+    .card {
+      width: 320px;
+      height: 420px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin: 20px 15px;
+      padding: 15px;
+      background-color: white;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+    }
+
+    .card-body {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 10px;
+      margin-bottom: 6px;
+    }
+
+    .card-text {
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 10px 0;
+      gap: 30px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand mx-auto" href="#">Ecommerce Recommendation System</a>
+  <div class="collapse navbar-collapse justify-content-end">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/wishlist" style="position: relative;">
+          <i class="fas fa-heart"></i> Wishlist
+          {% if wishlist_count and wishlist_count > 0 %}
+            <span class="badge badge-danger" style="position: absolute; top: 0; right: 0;">
+              {{ wishlist_count }}
+            </span>
+          {% endif %}
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert alert-success text-center mt-3">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Search Bar -->
+<div class="container mt-5">
+  <form action="/recommendations" method="post" class="text-center">
+    <div class="form-row justify-content-center">
+      <div class="col-md-6 mb-2">
+        <input type="text" name="prod" class="form-control neon-input" placeholder="Search for product..." required>
+      </div>
+      <div class="col-md-2 mb-2">
+        <input type="number" name="nbr" class="form-control neon-input" placeholder="Number" required>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-lg neon-button mt-2">🔍 Search</button>
+  </form>
+</div>
+
+<style>
+  .neon-input {
+    border: 2px solid #3e150e;
+    box-shadow: 0 0 8px #082727;
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+  }
+
+  .neon-input::placeholder {
+    color: rgb(4, 7, 7);
+    opacity: 0.6;
+  }
+
+  .neon-button {
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    color: #000000;
+    text-shadow: 0 0 3px #ffffff;
+    box-shadow: 0 0 10px #f4ffff, 0 0 20px #d5e4e4 inset;
+    transition: all 0.3s ease;
+  }
+
+  .neon-button:hover {
+    background-color: #eaefef;
+    color: rgb(0, 0, 0);
+    box-shadow: 0 0 15px #ffffff, 0 0 30px #ffffff inset;
+    transform: scale(1.05);
+  }
+
+  .wishlist-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: grey;
+  transition: color 0.3s ease;
+}
+
+.wishlist-btn.active {
+  color: red;
+}
+
+</style>
+
+<!-- Error Message -->
+{% if message %}
+  <div class="text-center text-danger mt-3 font-weight-bold">{{ message }}</div>
+{% endif %}
+
+<!-- Recommendations Section -->
+{% if content_based_rec is defined and not content_based_rec.empty %}
+  <div class="container mt-5">
+    <h2 class="text-center">Recommended Products</h2>
+    <div class="row mt-4">
+      {% for product in content_based_rec.itertuples() %}
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+        <div class="card">
+          <img src="{{ product.ImageURL.split(' | ')[0] }}" class="card-img-top">
+          <div class="card-body">
+            <h5 class="card-title">{{ truncate(product.Name, 12) }}</h5>
+            <p class="card-text">Brand: {{ product.Brand }}</p>
+            <p class="card-text"><strong>Price:</strong> ₹{{ random_prices[loop.index0] }}</p>
+            {% if is_in_cart(product.Name) %}
+              <button class="btn btn-success btn-sm mt-2" disabled>
+                <i class="fas fa-check"></i> In Cart
+              </button>
+            {% elif is_in_wishlist(product.Name) %}
+              <button class="btn btn-danger btn-sm mt-2" disabled>
+                <i class="fas fa-heart"></i> In Wishlist
+              </button>
+            {% else %}
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#productModal{{ loop.index0 }}">Buy Now</button>
+              
+              <form method="POST" action="/add_to_wishlist" class="d-inline">
+                <input type="hidden" name="product_name" value="{{ product.Name }}">
+                <input type="hidden" name="brand" value="{{ product.Brand }}">
+                <input type="hidden" name="price" value="{{ random_prices[loop.index0] }}">
+                <input type="hidden" name="image_url" value="{{ product.ImageURL.split(' | ')[0] }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm mt-2">
+                  <i class="fas fa-heart"></i> Wishlist
+                </button>
+              </form>
+            {% endif %}
+
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- All Product Modals (Placed Outside the Product Grid) -->
+  {% for product in content_based_rec.itertuples() %}
+  <div class="modal fade" id="productModal{{ loop.index0 }}" tabindex="-1" aria-labelledby="productModalLabel{{ loop.index0 }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-dark">
+        <div class="modal-header">
+          <h5 class="modal-title" id="productModalLabel{{ loop.index0 }}">{{ product.Name }}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+        </div>
+        <div class="modal-body text-center">
+          <img src="{{ product.ImageURL.split(' | ')[0] }}" class="img-fluid mb-3" style="height:200px; border-radius: 15px;">
+          <p><strong>Brand:</strong> {{ product.Brand }}</p>
+          <p><strong>Review Count:</strong> {{ product.ReviewCount }}</p>
+          <p><strong>Rating:</strong> {{ product.Rating }}</p>
+          <p><strong>Price:</strong> ₹{{ random_prices[loop.index0] }}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          {% if is_in_cart(product.Name) %}
+            <button class="btn btn-success" disabled>
+              <i class="fas fa-check"></i> Already in Cart
+            </button>
+          {% else %}
+            <form action="/add_to_cart" method="POST" class="d-inline">
+              <input type="hidden" name="product_name" value="{{ product.Name }}">
+              <input type="hidden" name="brand" value="{{ product.Brand }}">
+              <input type="hidden" name="price" value="{{ random_prices[loop.index0] }}">
+              <input type="hidden" name="image_url" value="{{ product.ImageURL.split(' | ')[0] }}">
+              <button type="submit" class="btn btn-success">Add to Cart</button>
+            </form>
+          {% endif %}
+          
+          {% if is_in_wishlist(product.Name) %}
+            <button class="btn btn-danger" disabled>
+              <i class="fas fa-heart"></i> Already in Wishlist
+            </button>
+          {% else %}
+            <form action="/add_to_wishlist" method="POST" class="d-inline ml-2">
+              <input type="hidden" name="product_name" value="{{ product.Name }}">
+              <input type="hidden" name="brand" value="{{ product.Brand }}">
+              <input type="hidden" name="price" value="{{ random_prices[loop.index0] }}">
+              <input type="hidden" name="image_url" value="{{ product.ImageURL.split(' | ')[0] }}">
+              <button type="submit" class="btn btn-outline-danger">
+                <i class="fas fa-heart"></i> Add to Wishlist
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% endif %}
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Toast Notification -->
+<div class="toast position-fixed bottom-0 right-0 m-4" style="z-index: 9999;" data-delay="3000">
+  <div class="toast-header bg-success text-white">
+    <strong class="mr-auto">Success</strong>
+    <button type="button" class="ml-2 mb-1 close text-white" data-dismiss="toast">&times;</button>
+  </div>
+  <div class="toast-body">
+    Product added to cart successfully!
+  </div>
+</div>
+
+<script>
+function toggleWishlist(button) {
+  button.classList.toggle('active');
+  if (button.classList.contains('active')) {
+    button.innerHTML = '&#10084;';
+  } else {
+    button.innerHTML = '&#9825;';
+  }
+}
+</script>
+
+
+</body>
+</html>

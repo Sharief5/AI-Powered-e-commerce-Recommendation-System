@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Cart</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .wishlist-btn {
+            font-size: 24px;
+            color: grey;
+            cursor: pointer;
+        }
+        .wishlist-btn.added {
+            color: red;
+        }
+    </style>
+    <script>
+        function toggleWishlist(button) {
+            button.classList.toggle('added');
+        }
+    </script>
+</head>
+<body>
+
+<!-- Navbar with Logout -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand font-weight-bold" href="/">Ecommerce</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            {% if session['username'] %}
+                <li class="nav-item mx-2">
+                    <span class="nav-link font-weight-bold text-success">
+                        Welcome, {{ session['username'] }}
+                    </span>
+                </li>
+                <li class="nav-item mx-2">
+                    <a class="nav-link btn btn-primary px-4 font-weight-bold" href="/logout">Logout</a>
+                </li>
+            {% else %}
+                <li class="nav-item mx-2">
+                    <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signup">Sign Up</a>
+                </li>
+                            <li class="nav-item mx-2">
+                <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signin">Sign In</a>
+            </li>
+        {% endif %}
+        <li class="nav-item mx-2">
+            <a class="nav-link btn btn-outline-warning px-4 font-weight-bold" href="/wishlist" style="position: relative;">
+                <i class="fas fa-heart"></i> Wishlist
+                {% if wishlist_count and wishlist_count > 0 %}
+                    <span class="badge badge-danger" style="position: absolute; top: -8px; right: -8px; font-size: 0.7rem;">
+                        {{ wishlist_count }}
+                    </span>
+                {% endif %}
+            </a>
+        </li>
+    </ul>
+</div>
+</nav>
+
+<!-- Cart Items -->
+<div class="container mt-5">
+    <h2>Your Cart Items</h2>
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> 
+        <strong>Tip:</strong> Products in your cart are automatically removed from your wishlist. 
+        You can move items back to your wishlist if needed.
+    </div>
+    {% if cart_items %}
+        <div class="row">
+            {% for item in cart_items %}
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <img src="{{ item.image_url }}" class="card-img-top" alt="Product Image" style="height: 200px; object-fit: contain;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.product_name }}</h5>
+                            <p class="card-text">Brand: {{ item.brand }}</p>
+                            <p class="card-text">Price: ₹{{ item.price }}</p>
+
+                            <form method="POST" action="/remove_from_cart">
+                                <input type="hidden" name="cart_id" value="{{ item.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm btn-block">Remove from Cart</button>
+                            </form>
+
+                            <form method="POST" action="/buy_now" class="mt-2">
+                                <input type="hidden" name="cart_id" value="{{ item.id }}">
+                                <button type="submit" class="btn btn-success btn-sm btn-block">Buy Now</button>
+                            </form>
+
+                            <form method="POST" action="/add_to_wishlist" class="mt-2">
+                                <input type="hidden" name="product_name" value="{{ item.product_name }}">
+                                <input type="hidden" name="brand" value="{{ item.brand }}">
+                                <input type="hidden" name="price" value="{{ item.price }}">
+                                <input type="hidden" name="image_url" value="{{ item.image_url }}">
+                                <button type="submit" class="btn btn-light btn-block" onclick="toggleWishlist(this)">
+                                    <span class="wishlist-btn">&#10084;</span> Add to Wishlist
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+</div>
+
+
+
+<!-- Flash messages (appear on right) -->
+<div style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+
+
+
+<!-- Toast Notification -->
+<div id="cart-toast" style="position: fixed; top: 20px; right: 20px; min-width: 250px; z-index: 9999; display: none;">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Product added to cart!
+        <button type="button" class="close" onclick="hideToast()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+</div>
+
+
+</body>
+
+
+
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
+        .product-image { border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .product-actions { gap: 15px; }
+        .wishlist-btn {
+            font-size: 24px;
+            background: none;
+            border: none;
+            color: grey;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .wishlist-btn:hover {
+            color: red;
+        }
+        .wishlist-btn.active {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
+    <a class="navbar-brand font-weight-bold" href="/">Ecommerce Recommendation System</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/categories"><i class="fas fa-th-large"></i> Categories</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/wishlist"><i class="fas fa-heart"></i> Wishlist</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a>
+            </li>
+            {% if session['username'] %}
+                <li class="nav-item">
+                    <span class="nav-link font-weight-bold text-success">
+                        Welcome, {{ session['username'] }}
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-primary px-4 font-weight-bold" href="/logout">Logout</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signup">Sign Up</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signin">Sign In</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ product.image_url }}" class="img-fluid product-image" alt="{{ product.name }}">
+        </div>
+        <div class="col-md-6">
+            <h2 class="mb-4">{{ product.name }}</h2>
+            <div class="mb-3">
+                <span class="badge badge-secondary mr-2">{{ product.brand }}</span>
+                <span class="badge badge-warning">⭐ {{ product.rating }}/5</span>
+            </div>
+            <h3 class="text-primary mb-3">₹{{ product.price }}</h3>
+            <p class="text-muted mb-4">{{ product.description }}</p>
+
+            <div class="d-flex product-actions">
+                {% if is_in_cart(product.name) %}
+                    <button class="btn btn-success btn-lg mr-2" disabled>
+                        <i class="fas fa-check"></i> Already in Cart
+                    </button>
+                {% else %}
+                    <form method="POST" action="{{ url_for('add_to_cart') }}" class="mr-2">
+                        <input type="hidden" name="product_name" value="{{ product.name }}">
+                        <input type="hidden" name="brand" value="{{ product.brand }}">
+                        <input type="hidden" name="price" value="{{ product.price }}">
+                        <input type="hidden" name="image_url" value="{{ product.image_url }}">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </form>
+                {% endif %}
+                
+                {% if is_in_wishlist(product.name) %}
+                    <button class="btn btn-danger btn-lg" disabled>
+                        <i class="fas fa-heart"></i> Already in Wishlist
+                    </button>
+                {% else %}
+                    <form method="POST" action="/add_to_wishlist">
+                        <input type="hidden" name="product_name" value="{{ product.name }}">
+                        <input type="hidden" name="brand" value="{{ product.brand }}">
+                        <input type="hidden" name="price" value="{{ product.price }}">
+                        <input type="hidden" name="image_url" value="{{ product.image_url }}">
+                        <button type="submit" class="btn btn-outline-danger btn-lg">
+                            <i class="fas fa-heart"></i> Add to Wishlist
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            
+            <div class="mt-4">
+                <a href="/categories" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Categories
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

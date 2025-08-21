@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Wishlist</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
+        
+        .wishlist-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .wishlist-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+        
+        .wishlist-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .empty-wishlist {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-wishlist i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
+    <a class="navbar-brand font-weight-bold" href="/">Ecommerce Recommendation System</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/categories"><i class="fas fa-th-large"></i> Categories</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/deals"><i class="fas fa-tags"></i> Deals</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a>
+            </li>
+            {% if session['username'] %}
+                <li class="nav-item">
+                    <span class="nav-link font-weight-bold text-success">
+                        Welcome, {{ session['username'] }}
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-primary px-4 font-weight-bold" href="/logout">Logout</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signup">Sign Up</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signin">Sign In</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show text-center mt-3" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Wishlist Header -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-heart text-danger"></i> My Wishlist</h2>
+                {% if wishlist_items %}
+                    <div>
+                        <a href="/clear_wishlist" class="btn btn-outline-danger" 
+                           onclick="return confirm('Are you sure you want to clear your entire wishlist?')">
+                            <i class="fas fa-trash"></i> Clear All
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> 
+        <strong>Tip:</strong> Products in your wishlist are automatically removed from your cart. 
+        You can move items to your cart when you're ready to purchase.
+    </div>
+
+    {% if wishlist_items %}
+        <div class="row">
+            {% for item in wishlist_items %}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card wishlist-card">
+                        <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.product_name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.product_name[:50] }}{% if item.product_name|length > 50 %}...{% endif %}</h5>
+                            <p class="card-text text-muted">Brand: {{ item.brand }}</p>
+                            <p class="card-text font-weight-bold text-primary">₹{{ item.price }}</p>
+                            
+                            <div class="wishlist-actions">
+                                <form method="POST" action="/add_to_cart" style="flex: 1;">
+                                    <input type="hidden" name="product_name" value="{{ item.product_name }}">
+                                    <input type="hidden" name="brand" value="{{ item.brand }}">
+                                    <input type="hidden" name="price" value="{{ item.price }}">
+                                    <input type="hidden" name="image_url" value="{{ item.image_url }}">
+                                    <button type="submit" class="btn btn-success btn-sm btn-block">
+                                        <i class="fas fa-cart-plus"></i> Add to Cart
+                                    </button>
+                                </form>
+                                
+                                <form method="POST" action="/remove_from_wishlist" style="flex: 1;">
+                                    <input type="hidden" name="product_name" value="{{ item.product_name }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm btn-block"
+                                            onclick="return confirm('Remove this item from wishlist?')">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-wishlist">
+            <i class="fas fa-heart-broken"></i>
+            <h3>Your wishlist is empty</h3>
+            <p>Start adding products to your wishlist to see them here!</p>
+            <a href="/" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

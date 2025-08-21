@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Top Deals - Ecommerce</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
+        
+        .deal-card img {
+            height: 200px;
+            object-fit: contain;
+        }
+        .original-price {
+            text-decoration: line-through;
+            font-size: 14px;
+            color: grey;
+        }
+        .discount-price {
+            font-weight: bold;
+            color: red;
+            font-size: 18px;
+        }
+        
+        .choice-modal .modal-body {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .choice-modal .btn {
+            margin: 10px;
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
+    <a class="navbar-brand font-weight-bold" href="/">Ecommerce Recommendation System</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/categories"><i class="fas fa-th-large"></i> Categories</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/deals"><i class="fas fa-tags"></i> Deals</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/wishlist"><i class="fas fa-heart"></i> Wishlist</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a>
+            </li>
+            {% if session['username'] %}
+                <li class="nav-item">
+                    <span class="nav-link font-weight-bold text-success">
+                        Welcome, {{ session['username'] }}
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-primary px-4 font-weight-bold" href="/logout">Logout</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signup">Sign Up</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary px-4 font-weight-bold" href="/signin">Sign In</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="mb-4 font-weight-bold text-center">Hot Deals Just for You!</h2>
+
+    <div class="row">
+        {% for item in deals %}
+            <div class="col-md-4 mb-4">
+                <div class="card deal-card">
+                    <img src="{{ item.image_url }}" class="card-img-top" alt="Product Image">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ item.name[:40] }}...</h5>
+                        <p class="card-text"><strong>Brand:</strong> {{ item.brand or "N/A" }}</p>
+                        <p class="original-price">₹ {{ item.original_price }}</p>
+                        <p class="discount-price">₹ {{ item.deal_price }}</p>
+                        <p class="rating">⭐ {{ item.rating }}/5</p>
+                        {% if is_in_cart(item.name) %}
+                            <button class="btn btn-success btn-block" disabled>
+                                <i class="fas fa-check"></i> Already in Cart
+                            </button>
+                        {% elif is_in_wishlist(item.name) %}
+                            <button class="btn btn-danger btn-block" disabled>
+                                <i class="fas fa-heart"></i> Already in Wishlist
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn btn-success btn-block mb-2" 
+                                    data-toggle="modal" data-target="#choiceModal{{ loop.index }}">
+                                <i class="fas fa-shopping-cart"></i> Buy Now
+                            </button>
+                            <form method="POST" action="/add_to_wishlist" class="d-inline">
+                                <input type="hidden" name="product_name" value="{{ item.name }}">
+                                <input type="hidden" name="brand" value="{{ item.brand or 'N/A' }}">
+                                <input type="hidden" name="price" value="{{ item.deal_price }}">
+                                <input type="hidden" name="image_url" value="{{ item.image_url }}">
+                                <button type="submit" class="btn btn-outline-danger btn-block">
+                                    <i class="fas fa-heart"></i> Add to Wishlist
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- Choice Modals for each product -->
+{% for item in deals %}
+<div class="modal fade choice-modal" id="choiceModal{{ loop.index }}" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-shopping-cart"></i> Choose Your Action
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h6 class="mb-4">{{ item.name[:50] }}{% if item.name|length > 50 %}...{% endif %}</h6>
+                <p class="text-muted mb-4">What would you like to do with this product?</p>
+                
+                <div class="d-flex flex-column">
+                    <form method="POST" action="/add_to_cart" class="mb-2">
+                        <input type="hidden" name="product_name" value="{{ item.name }}">
+                        <input type="hidden" name="brand" value="{{ item.brand or 'N/A' }}">
+                        <input type="hidden" name="price" value="{{ item.deal_price }}">
+                        <input type="hidden" name="image_url" value="{{ item.image_url }}">
+                        <button type="submit" class="btn btn-success btn-lg btn-block">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </form>
+                    
+                    <form method="POST" action="/add_to_wishlist">
+                        <input type="hidden" name="product_name" value="{{ item.name }}">
+                        <input type="hidden" name="brand" value="{{ item.brand or 'N/A' }}">
+                        <input type="hidden" name="price" value="{{ item.deal_price }}">
+                        <input type="hidden" name="image_url" value="{{ item.image_url }}">
+                        <button type="submit" class="btn btn-outline-danger btn-lg btn-block">
+                            <i class="fas fa-heart"></i> Add to Wishlist
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
