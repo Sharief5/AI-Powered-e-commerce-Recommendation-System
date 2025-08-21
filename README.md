@@ -1,91 +1,75 @@
-🛒 AI-Powered E-commerce Recommendation System
+AI-Powered E-commerce Recommendation System
 
-An intelligent recommendation system that suggests products to users based on their browsing history, preferences, and interactions.
-This project was developed as part of our HCL Internship Project.
+This project is an AI-driven web application that provides personalized product recommendations for e-commerce users. It is built with the goal of enhancing the shopping experience by suggesting products based on user preferences and past interactions.
 
 🚀 Features
 
-🔑 User Authentication – Secure Sign Up & Sign In functionality.
+User authentication (Sign Up & Sign In)
 
-🛍 Product Catalog – Browse and explore trending products.
+Trending products and category-wise product display
 
-🤖 Recommendation Engine – Personalized product recommendations using AI/ML.
+Personalized product recommendation system
 
-🛒 Cart System – Add/remove products to cart with instant success notification.
+Add-to-Cart functionality with confirmation alerts
 
-📊 Data-Driven Insights – Recommendations powered by user-product interactions.
+Simple and user-friendly UI
 
-🌐 Frontend + Backend – Full-stack web application with Flask & MySQL.
+🛠️ Tech Stack
 
-🏗️ Tech Stack
+Backend: Flask (Python)
 
-Frontend
+Frontend: HTML, CSS, JavaScript
 
-HTML, CSS, JavaScript
+Database: MySQL
 
-Bootstrap
+Recommendation Engine: Machine Learning based collaborative filtering & content-based filtering
 
-Backend
+Tools & Deployment: Git, GitHub
 
-Python (Flask Framework)
+📂 Project Structure
+E-COMMERCE_HCL/
+│-- app.py              # Main Flask app  
+│-- templates/          # HTML templates (index.html, main.html, etc.)  
+│-- static/             # CSS, JS, and images  
+│-- database/           # MySQL integration  
+│-- README.md           # Project documentation  
 
-MySQL Database
+⚙️ Setup Instructions
 
-Machine Learning / AI
+Clone the repository
 
-Scikit-learn
+git clone https://github.com/Sharief5/AI-Powered-e-commerce-Recommendation-System.git
+cd AI-Powered-e-commerce-Recommendation-System
 
-Pandas, NumPy
 
-Deployment & Tools
+Install required dependencies
 
-GitHub
-
-HCL Cloud Environment
-
-⚙️ Installation & Setup
-1️⃣ Clone the Repository
-git clone https://github.com/Sharief5/ecommerce-recommendation.git
-cd ecommerce-recommendation
-
-2️⃣ Create Virtual Environment & Install Dependencies
-python -m venv venv
-source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-3️⃣ Setup Database
 
-Install MySQL
+Configure MySQL database and update credentials in app.py.
 
-Create database ecommerce
+Run the application
 
-Update app.py with your MySQL username & password
-
-Run the SQL script (if provided) to create tables
-
-4️⃣ Run the Application
 python app.py
 
 
-Visit: http://127.0.0.1:5000
+Open your browser and visit http://127.0.0.1:5000/
 
+🔮 Future Improvements
 
-🔮 Future Enhancements
+Advanced AI models for recommendations
 
-Integration with Deep Learning models for better recommendations
+Integration with payment gateway
 
-Real-time recommendation updates
+User behavior analytics dashboard
 
-Advanced filtering (price, categories, discounts)
+Deployment on AWS / Docker
 
-Cloud-native deployment with Docker & Kubernetes
+🤝 Contributing
 
-👨‍💻 Contributors
-
-Shaik Nagoor Sharief
-
-Team Members (HCL Internship)
+Feel free to fork this repository and contribute via pull requests.
 
 📜 License
 
-This project is for educational & internship purposes under HCL guidance.
+This project is created as part of an academic learning project (HCL Internship) and is free to use for educational purposes.
